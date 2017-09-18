@@ -1,0 +1,16 @@
+digraph virtual_table{
+	vtable[
+		shape = record,
+		label = "{
+			vcall offsets | 
+			vbase offsets | 
+			offset to top | 
+			RTTI | 
+			address point(virtual function ptr(0)) |
+			virtual function ptr(1) |
+			virtual function ptr(2) |
+			......................	|
+			virtual function ptr(n)
+		}"
+	];
+}
