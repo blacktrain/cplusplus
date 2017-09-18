@@ -13,6 +13,9 @@
  (long)(Shared_Virt *)dd - (long)dd = 8
  */
 
+extern "C" int printf(const char *,...);
+#define EVAL(EXPR) printf( #EXPR " = %d\n", (EXPR) );
+
 struct Shared_Virt {
 	virtual void foo();
 };
@@ -23,6 +26,7 @@ struct Nonvirt2 : virtual Shared_Virt {
 
 struct Nonvirt3 : virtual Shared_Virt {
 	virtual void baz();
+	int test_aa;
 };
 
 struct Nonvirt1 {
@@ -33,20 +37,23 @@ struct Most_Derived : Nonvirt1 , Nonvirt2 , Nonvirt3 {
 	virtual void bar();
 };
 
-void Shared_Virt::foo() {}
-void Nonvirt2::bar() {}
-void Nonvirt3::baz() {}
-void Nonvirt1::foo() {}
-void Most_Derived::bar() {}
-
-extern "C" int printf(const char *,...);
-#define EVAL(EXPR) printf( #EXPR " = %d\n", (EXPR) );
+void Shared_Virt::foo() { printf("Shared_Virt::foo() \n"); }
+void Nonvirt2::bar() { printf("Nonvirt2::bar() \n"); }
+void Nonvirt3::baz() { printf("Nonvirt3::baz() \n"); }
+void Nonvirt1::foo() { printf("Nonvirt1::foo() \n"); }
+void Most_Derived::bar() { printf("Most_Derived::bar() \n"); }
 
 #ifdef __x86_64__
 typedef long long *ptr_t;
 #else
 typedef int *ptr_t;
 #endif
+
+typedef void (*ptr_vfunc)();
+
+void test(){
+	printf("%s\n",__func__);
+}
 
 main()
 {
@@ -73,7 +80,31 @@ main()
 	printf("vptr_nonvirt3 = %p\n",*vptr_nonvirt3);
 	printf("vptr_shared_virt = %p\n",*vptr_shared_virt);
 
-	//call Nonvirt3 virtual function baz()
-	ptr_t **vptr_most_derived = (ptr_t**)nonvirt3;
+	ptr_vfunc vfunc = 0;
 
+	//call Nonvirt1 virtual function 
+	ptr_t *vtable_nonvirt1 = (ptr_t*)*vptr_nonvirt1;
+	vfunc = (ptr_vfunc)vtable_nonvirt1[0];
+	vfunc();
+
+	//call shared_virt virtual function 
+	ptr_t *vtable_shared_virt = (ptr_t*)*vptr_shared_virt;
+	vfunc = (ptr_vfunc)vtable_shared_virt[0];
+	vfunc();
+
+	//call Nonvirt2 virtual function 
+	ptr_t *vtable_nonvirt2 = (ptr_t*)*vptr_nonvirt2;
+	vfunc = (ptr_vfunc)vtable_nonvirt2[1];
+	vfunc();
+
+	//call Nonvirt3 virtual function 
+	ptr_t *vtable_nonvirt3 = (ptr_t*)*vptr_nonvirt3;
+	vfunc = (ptr_vfunc)vtable_nonvirt3[1];
+	vfunc();
+
+	void *what = (void *)vtable_nonvirt3[0];
+	if(!what)
+		printf("error\n");
+
+	dd->baz();
 }
