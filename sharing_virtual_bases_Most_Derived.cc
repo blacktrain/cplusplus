@@ -43,6 +43,8 @@ void Nonvirt3::baz() { printf("Nonvirt3::baz() \n"); }
 void Nonvirt1::foo() { printf("Nonvirt1::foo() \n"); }
 void Most_Derived::bar() { printf("Most_Derived::bar() \n"); }
 
+Most_Derived a;
+/*
 #ifdef __x86_64__
 typedef long long *ptr_t;
 #else
@@ -108,3 +110,5 @@ main()
 
 	dd->baz();
 }
+
+*/
