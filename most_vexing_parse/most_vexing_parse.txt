@@ -1,0 +1,34 @@
+"most vexing parse" 是c++中的一种语法歧义问题，这个名词是scott Meyers在Effective STL中提出的
+
+来自wikipedia的示例代码:
+class Timer{
+public:
+	Timer();
+};
+
+class TimerKeeper{
+public:
+	TimerKeeper(const Timer& t);
+	
+	int get_time();
+};
+
+int main(){
+	TimerKeeper time_keeper(Timer());
+	
+	return time_keeper.get_time();
+}
+
+编译次代码会出现如下错误:
+most_vexing_parse.cc: In function ‘int main()’:                                                                                                               
+most_vexing_parse.cc:16:21: error: request for member ‘get_time’ in ‘time_keeper’, which is of non-class type ‘TimerKeeper(Timer (*)())’                      
+  return time_keeper.get_time();
+
+从g++错误输出看到编译器认为time_keeper不是我们认为的TimerKeeper类对象，编译器认为TimerKeeper time_keeper(Timer());这行是声明了一个函数，其返回值为TimerKeeper，参数为一个函数指针:返回值为Timer，0个参数
+为什么会这样呢，因为c++标准要求这种表达是要被这样解释的
+
+解决办法:
+1.给Timer()再加一层括号，这样就不会被解释为一个返回值为Timer空参数的函数指针了 TimerKeeper time_keeper((Timer()));
+2.统一为c++11的花括号{}初始化形式，这样就没有歧义了 TimerKeeper timer_keeper{Timer{}};
+
+新项目应该使用第二种解决办法，并且按照c++11或者以上标准来写，新标准解决了很多问题，时代在进步别固守c++98了
